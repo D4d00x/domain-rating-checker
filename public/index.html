@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domänkontrollant - Torggruppen AB</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header with Logo -->
+        <header class="bg-slate-800 rounded-xl shadow-2xl p-8 mb-8 text-center border border-slate-700">
+            <img src="logo.jpg" alt="Torggruppen.se Domänanalys" style="height: 80px; width: auto; display: block; margin: 0 auto;">
+        </header>
+
+        <!-- Modern Navigation -->
+        <nav class="bg-slate-800 rounded-xl shadow-2xl mb-8 overflow-hidden border border-slate-700">
+            <div class="flex">
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold text-cyan-400 bg-slate-700 border-b-2 border-cyan-400 transition-all duration-200 hover:bg-slate-600" data-tab="checker">
+                    <i class="fas fa-search mr-2"></i>Domänkontrollant
+                </button>
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold text-slate-300 hover:text-cyan-400 hover:bg-slate-700 transition-all duration-200" data-tab="results">
+                    <i class="fas fa-table mr-2"></i>Resultat
+                </button>
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold text-slate-300 hover:text-cyan-400 hover:bg-slate-700 transition-all duration-200" data-tab="settings">
+                    <i class="fas fa-cog mr-2"></i>Inställningar
+                </button>
+            </div>
+        </nav>
+
+        <!-- Domain Checker Tab -->
+        <div id="checker" class="tab-content active">
+            <div class="bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-search text-cyan-400 mr-3"></i> Kontrollera Domänbetyg
+                </h2>
+                
+                <!-- Single Domain Check -->
+                <div class="mb-8 p-6 bg-slate-700 rounded-lg border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">Enskild Domänkontroll</h3>
+                    <div class="flex gap-3">
+                        <input type="text" id="singleDomain" placeholder="Ange domän (t.ex. example.com)" 
+                               class="flex-1 px-4 py-3 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        <button onclick="checkSingleDomain()" class="px-6 py-3 bg-cyan-500 text-slate-900 font-semibold rounded-lg hover:bg-cyan-400 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-search mr-2"></i> Kontrollera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Priority Thresholds -->
+                <div class="mb-8 p-6 bg-slate-700 rounded-lg border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">Prioritetströsklar</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center space-x-3">
+                            <label class="text-sm font-medium text-slate-300 whitespace-nowrap">Hög Prioritet Domänbetyg ≥</label>
+                            <input type="number" id="priorityRating" value="50" min="0" max="100" 
+                                   class="w-20 px-3 py-2 border border-slate-600 bg-slate-900 text-white rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="text-sm font-medium text-slate-300 whitespace-nowrap">Hög Prioritet Bakåtlänkar ≥</label>
+                            <input type="number" id="priorityBacklinks" value="1000" min="0" 
+                                   class="w-24 px-3 py-2 border border-slate-600 bg-slate-900 text-white rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Domain Check -->
+                <div class="mb-8 p-6 bg-slate-700 rounded-lg border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">Bulk Domänkontroll</h3>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                        <button onclick="document.getElementById('csvFile').click()" 
+                                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-upload mr-2"></i> Ladda upp CSV-fil
+                        </button>
+                        <span id="fileName" class="flex items-center text-sm text-slate-300"></span>
+                        <button onclick="processCsvFile()" id="processCsvBtn" disabled
+                                class="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-cogs mr-2"></i> Bearbeta Domäner
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="loading hidden text-center py-8">
+                    <div class="inline-flex items-center px-6 py-3 bg-slate-700 text-cyan-400 rounded-lg border border-slate-600">
+                        <i class="fas fa-spinner fa-spin mr-3"></i> Kontrollerar domäner...
+                    </div>
+                </div>
+
+                <!-- Quick Results -->
+                <div id="quickResults" class="results-preview"></div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <div class="bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center mb-4 sm:mb-0">
+                        <i class="fas fa-table text-cyan-400 mr-3"></i> Domänresultat
+                    </h2>
+                    <div class="flex gap-3">
+                        <button onclick="clearResults()" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-500 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-trash mr-2"></i> Rensa Alla
+                        </button>
+                        <button onclick="exportResults()" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-500 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-download mr-2"></i> Exportera CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="bg-slate-700 rounded-lg p-6 mb-6 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-filter text-slate-300 mr-2"></i> Filter
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Domänbetyg ≥</label>
+                            <input type="number" id="minRating" placeholder="0" min="0" max="100" 
+                                   class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Bakåtlänkar ≥</label>
+                            <input type="number" id="minBacklinks" placeholder="0" min="0" 
+                                   class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Hänvisande Domäner ≥</label>
+                            <input type="number" id="minRefDomains" placeholder="0" min="0" 
+                                   class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Prioritetsnivå</label>
+                            <select id="priorityFilter" class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                                <option value="">Alla Domäner</option>
+                                <option value="high">Endast Hög Prioritet</option>
+                                <option value="low">Endast Låg Prioritet</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                            <select id="statusFilter" class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                                <option value="">Alla</option>
+                                <option value="success">Framgång</option>
+                                <option value="error">Fel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="applyFilters()" class="px-4 py-2 bg-cyan-600 text-slate-900 font-semibold rounded-lg hover:bg-cyan-500 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-search mr-2"></i> Tillämpa
+                        </button>
+                        <button onclick="clearFilters()" class="px-4 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-500 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-times mr-2"></i> Rensa
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="flex justify-center items-center gap-4 mb-6">
+                    <button onclick="loadResults(currentPage - 1)" id="prevBtn" class="px-4 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-500 disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors duration-200 flex items-center" disabled>
+                        <i class="fas fa-chevron-left mr-2"></i> Föregående
+                    </button>
+                    <span id="pageInfo" class="px-4 py-2 bg-slate-700 text-white rounded-lg font-medium border border-slate-600">Sida 1</span>
+                    <button onclick="loadResults(currentPage + 1)" id="nextBtn" class="px-4 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-500 disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors duration-200 flex items-center">
+                        Nästa <i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Results Table -->
+                <div class="rounded-lg border border-slate-600 bg-slate-900 max-h-96 overflow-y-auto">
+                    <table id="resultsTable" class="w-full">
+                        <thead class="bg-slate-700 sticky top-0 border-b border-slate-600">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Domän</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Domäntillit</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Sidtillit</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Bakåtlänkar</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Hänvisande Domäner</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Organisk Trafik</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Källa</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Kontrollerad</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-200">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody" class="bg-slate-900 divide-y divide-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-cog text-cyan-400 mr-3"></i> Inställningar & Automatisering
+                </h2>
+                
+                <!-- Automation Settings -->
+                <div class="bg-slate-700 rounded-lg p-6 mb-6 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">Automatiseringsinställningar</h3>
+                    <div class="space-y-4">
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="enableAutomation" class="w-5 h-5 text-cyan-600 bg-slate-900 border-slate-600 rounded focus:ring-cyan-400">
+                            <span class="text-slate-300 font-medium">Aktivera Automatisk Kontroll</span>
+                        </label>
+                        
+                        <div>
+                            <label for="scheduleSelect" class="block text-sm font-medium text-slate-300 mb-2">Kontrollfrekvens:</label>
+                            <select id="scheduleSelect" class="w-full max-w-md px-3 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                                <option value="0 9 * * *">Dagligen kl 09:00</option>
+                                <option value="0 9 * * 1">Veckovis (Måndagar kl 09:00)</option>
+                                <option value="0 9 1 * *">Månadsvis (1:a dagen kl 09:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Keys -->
+                <div class="bg-slate-700 rounded-lg p-6 mb-6 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">API-nycklar</h3>
+                    <div>
+                        <label for="serankingApiKey" class="block text-sm font-medium text-slate-300 mb-2">Seranking.com API-nyckel:</label>
+                        <div class="flex gap-3">
+                            <input type="password" id="serankingApiKey" placeholder="Ange din seranking.com API-nyckel" 
+                                   class="flex-1 px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            <button onclick="testSerankingApi()" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-500 transition-colors duration-200">
+                                Testa API
+                            </button>
+                        </div>
+                        <p class="text-sm text-slate-400 mt-2">
+                            Hämta API-nyckel på <a href="https://seranking.com" target="_blank" class="text-cyan-400 hover:text-cyan-300 underline">seranking.com</a> för exakta domänmätningar
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Email Reports -->
+                <div class="bg-slate-700 rounded-lg p-6 mb-6 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-white mb-4">E-postrapporter</h3>
+                    <div class="space-y-4">
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="enableEmailReports" class="w-5 h-5 text-cyan-600 bg-slate-900 border-slate-600 rounded focus:ring-cyan-400">
+                            <span class="text-slate-300 font-medium">Skicka E-postrapporter</span>
+                        </label>
+
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="autoEmailAfterCheck" class="w-5 h-5 text-cyan-600 bg-slate-900 border-slate-600 rounded focus:ring-cyan-400">
+                            <span class="text-slate-300 font-medium">Skicka e-post automatiskt efter varje kontroll</span>
+                        </label>
+                        <p class="text-sm text-slate-400 ml-8">Skickar automatiskt e-postrapport direkt efter domänkontroller</p>
+                        
+                        <div>
+                            <label for="emailAddress" class="block text-sm font-medium text-slate-300 mb-2">Rapportmottagare (kommaseparerade):</label>
+                            <input type="text" id="emailAddress" placeholder="email1@domain.com, email2@domain.com, email3@domain.com" 
+                                   class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="smtpProvider" class="block text-sm font-medium text-slate-300 mb-2">E-postleverantör:</label>
+                                <select id="smtpProvider" class="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                                    <option value="gmail">Gmail</option>
+                                    <option value="outlook">Outlook/Hotmail</option>
+                                    <option value="yahoo">Yahoo</option>
+                                    <option value="resend">Resend (API - Inget Lösenord)</option>
+                                    <option value="custom">Anpassad SMTP</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="smtpEmail" class="block text-sm font-medium text-slate-300 mb-2">Din E-postadress:</label>
+                                <input type="email" id="smtpEmail" placeholder="dinemail@gmail.com" 
+                                       class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div id="passwordField">
+                            <label for="smtpPassword" class="block text-sm font-medium text-slate-300 mb-2">E-postlösenord/Applösenord:</label>
+                            <input type="password" id="smtpPassword" placeholder="Ditt e-postlösenord eller applösenord" 
+                                   class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            <p class="text-sm text-slate-400 mt-2">Gmail: Använd Applösenord | Outlook: Använd vanligt lösenord | Yahoo: Använd Applösenord</p>
+                        </div>
+
+                        <div id="resendField" style="display: none;" class="space-y-4">
+                            <div>
+                                <label for="resendApiKey" class="block text-sm font-medium text-slate-300 mb-2">Resend API-nyckel:</label>
+                                <input type="password" id="resendApiKey" placeholder="re_xxxxxxxxxx" 
+                                       class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label for="resendFromEmail" class="block text-sm font-medium text-slate-300 mb-2">Avsändar-e-post (valfritt):</label>
+                                <input type="email" id="resendFromEmail" placeholder="domainchecker@resend.dev" 
+                                       class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            </div>
+                            
+                            <p class="text-sm text-slate-400">
+                                Hämta gratis API-nyckel på <a href="https://resend.com" target="_blank" class="text-cyan-400 hover:text-cyan-300 underline">resend.com</a> (3 000 e-post/månad gratis)
+                            </p>
+                        </div>
+
+                        <div id="customSmtpSettings" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="smtpHost" class="block text-sm font-medium text-slate-300 mb-2">SMTP-värd:</label>
+                                <input type="text" id="smtpHost" placeholder="smtp.dinleverantor.com" 
+                                       class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label for="smtpPort" class="block text-sm font-medium text-slate-300 mb-2">SMTP-port:</label>
+                                <input type="number" id="smtpPort" placeholder="587" value="587" 
+                                       class="w-full px-4 py-2 border border-slate-600 bg-slate-900 text-white placeholder-slate-400 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="testEmail()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-envelope mr-2"></i> Testa E-postkonfiguration
+                            </button>
+                            <button onclick="saveSettings()" class="px-4 py-2 bg-cyan-600 text-slate-900 font-semibold rounded-lg hover:bg-cyan-500 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-save mr-2"></i> Spara Inställningar
+                            </button>
+                        </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Notification -->
+    <div id="notification" class="notification hidden fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg font-semibold text-white transform transition-all duration-300 translate-x-full"></div>
+
+    <script src="translations.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "domain-rating-checker",
+  "version": "1.0.0",
+  "description": "Professional domain rating checker with automation and reporting",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "multer": "^1.4.5-lts.1",
+    "csv-parser": "^3.0.0",
+    "node-cron": "^3.0.2",
+    "nodemailer": "^6.9.7",
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

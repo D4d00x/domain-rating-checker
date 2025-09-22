@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Svenska Översättning</title>
+</head>
+<body>
+    <h1>Test av Svenska Översättningar</h1>
+    <button onclick="testTranslations()">Testa Översättningar</button>
+    <div id="results"></div>
+
+    <script src="public/translations.js"></script>
+    <script>
+        function testTranslations() {
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <h2>Översättningstest:</h2>
+                <p>Engelska: "Please enter a domain" → Svenska: "${t('Please enter a domain')}"</p>
+                <p>Engelska: "Domain checked successfully!" → Svenska: "${t('Domain checked successfully!')}"</p>
+                <p>Engelska: "Failed to check domain" → Svenska: "${t('Failed to check domain')}"</p>
+                <p>Engelska: "Settings saved successfully!" → Svenska: "${t('Settings saved successfully!')}"</p>
+                <p>Dynamisk: "Processed 5 domains" → "${t('processed_domains', 5)}"</p>
+                <p>Sida info: "Page 3" → "${t('page_info', 3)}"</p>
+            `;
+        }
+    </script>
+</body>
+</html>
