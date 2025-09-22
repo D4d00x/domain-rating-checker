@@ -16,7 +16,8 @@
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.7",
     "axios": "^1.6.0",
-    "resend": "^2.1.0"
+    "resend": "^2.1.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "engines": {
     "node": ">=18.0.0"
